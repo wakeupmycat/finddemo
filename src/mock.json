@@ -1,0 +1,40 @@
+{"items": [
+    {
+      "data": {
+        "patientID": "YB0044108",
+        "birthday": "1971-11-01T00:00:00+08:00",
+        "gender": "男",
+        "name": "罗德平"
+      }
+    },
+    {
+      "data": {
+        "patientID": "YB0181539",
+        "birthday": "1944-06-11T00:00:00+08:00",
+        "gender": "男",
+        "name": "刘守灿"
+      }
+    }
+  ],
+  "columns":[
+    {
+      "key":"patientID",
+      "title":"病人ID"
+    },
+    {
+      "key":"name",
+      "title":"病人姓名"
+    },
+    {
+      "key":"birthday",
+      "title":"出生日期"
+    },
+    {
+      "key":"gender",
+      "title":"性别"
+    }
+  ],
+  "type":"patient",
+  "total": 4382,
+  "size": 10
+}

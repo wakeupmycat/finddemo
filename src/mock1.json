@@ -1,0 +1,15 @@
+{"items": [
+{
+"name": "patient",
+"text": "病人信息"
+},
+{
+"name": "order",
+"text": "医嘱"
+},
+{
+"name": "diagnosis",
+"text": "诊断"
+}
+]
+}
