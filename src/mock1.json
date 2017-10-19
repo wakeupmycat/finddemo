@@ -1,15 +1,52 @@
-{"items": [
 {
-"name": "patient",
-"text": "病人信息"
-},
-{
-"name": "order",
-"text": "医嘱"
-},
-{
-"name": "diagnosis",
-"text": "诊断"
-}
-]
+  "items": [
+    {
+      "name": "patient",
+      "text": "病人信息"
+    },
+    {
+      "name": "order",
+      "text": "医嘱"
+    },
+    {
+      "name": "diagnosis",
+      "text": "诊断"
+    },
+    {
+      "name": "diagnosisID",
+      "text": "就诊ID"
+    },
+    {
+      "name": "diagnosisNum",
+      "text": "就诊序号"
+    },
+    {
+      "name": "diagnosisCon",
+      "text": "诊断内容"
+    },
+    {
+      "name": "diagnosisCode",
+      "text": "诊断编码"
+    },
+    {
+      "name": "diagnosisTime",
+      "text": "诊断时间"
+    },
+    {
+      "name": "diagnosisOffice",
+      "text": "诊断科室"
+    },
+    {
+      "name": "diagnosisDoc",
+      "text": "诊断医生"
+    },
+    {
+      "name": "diagnosisDecide",
+      "text": "是否需要"
+    },
+    {
+      "name": "ICDcode",
+      "text": "ICD10编码"
+    }
+  ]
 }

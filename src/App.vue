@@ -1,12 +1,12 @@
 <template>
   <div id="app">
-    <div class="sheader">
+    <div class="sheader" style="width: auto">
       <div class="sheader-con">
         <div class="brand-img">
           <img src="./assets/images/brand@2x.png" style="width: 181px;height: 35px;margin-top: 12px">
         </div>
         <div class="sheader-inp">
-          <input type="text" placeholder="试试输入糖尿病，年龄大于20岁">
+          <input id="commonsearch" ref="searchCon" type="text" placeholder="试试输入糖尿病，年龄大于20岁">
           <a @click="search()" id="search" class="btn btn-search" href="javascript:void (0)">
 
             <svg width="20px" height="20px" viewBox="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg"
@@ -32,37 +32,97 @@
               </g>
             </svg>
           </a>
-          <a class="btn adv-search" href="javascript:void (0)">高级查询</a>
+          <router-link class="btn adv-search" to="/accSearch">高级查询</router-link>
         </div>
       </div>
     </div>
-    <DisList :msg="msg"></DisList>
+    <DisList :page="page" :staList="staList" :lists1="lists1" :dataInfo="dataInfo" :num="num"></DisList>
+    <router-view></router-view>
+
   </div>
 </template>
 
 <script>
   import DisList from './components/DisList.vue'
+  import utils from './assets/js/utils'
   import $ from 'jquery'
+  import axios from 'axios'
 
   export default {
     name: 'app',
     data() {
       return {
-        msg:'222'
+        num:0,
+        staList: [],
+        lists1:[],
+        dataInfo:'',
+        page:0
       }
     },
     components: {DisList},
+    created(){
+    },
     methods: {
       search() {
-        $('.brand-img').animate({
-          top: 0, left: 0,
-        }, 500);
-        $('.sheader-inp').animate({
-          top: 35, left: 0,
-        }, 500);
-        $('.sheader').animate({
-          height: 136
-        }, 500);
+//        $('.brand-img').animate({
+//          top: 0, left: 0,
+//        }, 500);
+//        $('.sheader-inp').animate({
+//          top: 35, left: 0,
+//        }, 500);
+//        $('.sheader').animate({
+//          height: 136
+//        }, 500);
+        $('#app').css("overflow-y", "scroll")
+        axios.post('/_/hosp/search/science', {
+          "query": {
+            "or": {
+              "values": [
+                {
+                  "and": {
+                    "values": [
+                      {
+                        "compare": {
+                          "kword": "symptom",
+                          "operator": "eq",
+                          "values": [
+                            $("#commonsearch").val()
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          "assets": {
+            "queryModel": "症状等于发热query的json编码字符串数据",
+            "modelText": "症状等于发热"
+          },
+          "start":this.page,
+          "type": "diagnosis",
+          "filters": []
+        }).then(res => {
+          console.log(res.data);
+
+          res.data.items.forEach(item=>{
+            if(item.data.birthday){
+              item.data.birthday.substr(0,10)
+
+            }
+            if(item.data.date){
+              item.data.date.substr(0,10)
+            }
+          })
+          res.data.columns.forEach(item=>{
+            item.checked=true
+          })
+          this.dataInfo=res.data
+          this.staList=res.data.columns;
+          this.lists1=res.data.items;
+          this.num=utils.toThousand(res.data.total)
+        })
       }
 
     }
@@ -73,7 +133,8 @@
   .sheader
     background #F5F5F6
     background-image url("./assets/images/bg1.png")
-    height 100%
+    height 136px
+    width 100%
     .sheader-con
       width 1226px
       overflow hidden
@@ -83,12 +144,12 @@
       height 100%
       .brand-img
         position absolute
-        left 45%
-        top 17%
+        left 0
+        top 0
       .sheader-inp
         position absolute
-        top 24%
-        left 20%
+        top 35px
+        left 0
         width 695px
         height 44px
         border 1px solid #E1E0E1

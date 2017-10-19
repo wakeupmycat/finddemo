@@ -1,13 +1,16 @@
 <template>
-  <div v-if="num" class="dislist">
-    <div class="result-tip">
-      共搜索到<span
-      style="color: #41B8b0;display: inline-block;padding: 0 5px;font-size: 20px;font-family: Arial">{{num}}</span>位病人
-    </div>
+  <div class="dislist">
+    <!--<div class="result-tip">-->
+      <!--共搜索到<span-->
+      <!--style="color: #41B8b0;display: inline-block;padding: 0 5px;font-size: 20px;font-family: Arial">{{num}}</span>位病人-->
+    <!--</div>-->
     <div class="list-box">
       <span class="list-title">自定义病人队列统计表</span>
+      <div>
+        <input type="checkbox" v-model="all">全选
+      </div>
       <ul class="list-lists">
-        <li v-for="(list,key) in lists" v-if="key!==0">
+        <li v-for="(list,key) in lists">
           <input @change="fn" style="position: relative;top: -1px" type="checkbox" v-model="list.checked">
           <span>{{list.text}}</span>
         </li>
@@ -20,41 +23,56 @@
       </li>
     </ul>
     <ul class="listInfo-list-check">
-      <li class="list-check-item" v-for="(list,key) in lists" v-if="active==key">
+      <li class="list-check-item" :class="{activeClass:key==0}" v-for="(list,key) in lists" >
       </li>
     </ul>
-    <div class="listInfo-table">
-      <span class="list-filter">筛选</span>
-      <ul class="list-check-box">
-        <li v-for="item in staList">
-          <input @change="toggleList" style="position: relative;top: -1px" type="checkbox" v-model="item.checked">
-          <span>{{item.title}}</span>
-        </li>
-      </ul>
-      <span style="font-size: 14px;">共搜索到
+    <div v-if="num">
+      <div class="listInfo-table">
+        <span class="list-filter">筛选</span>
+        <ul class="list-check-box">
+          <li v-for="item in staList">
+            <input @change="toggleList" style="position: relative;top: -1px" type="checkbox" v-model="item.checked">
+            <span>{{item.text}}</span>
+          </li>
+        </ul>
+        <span style="font-size: 14px;">共搜索到
       <span>{{num}}</span>
       条记录</span>
-      <ul class="staTable">
-        <li class="staTable-header">
-          <span v-for="item in staList" v-show="item.checked">{{item.title}}</span>
-        </li>
-        <li v-for="item in lists1" class="staTable-body">
-          <span v-for="col in staList" v-show="col.checked" >{{item.data[col.key]}}</span>
-        </li>
-        <li class="staTable-footer">
-          <div style="float: right">
-            <span @click="goPrev" class="prev">上一页</span>
-            <span @click="goNext" class="next">下一页</span>
-            <span>跳转到
-            <input type="text" style="width: 16px;height: 16px;text-align: center">
+        <div  style="overflow: scroll; width: 100%">
+          <table   class="staTable" border>
+            <thead>
+            <tr>
+              <th v-for="item in staList" v-show="item.checked">
+                <span :title="item.text"> {{item.text}}</span>
+              </th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="item in lists1" class="staTable-body">
+              <td :title="item.data[col.key]" v-for="col in staList" v-show="col.checked"><span>{{item.data[col.key]}}</span></td>
+            </tr>
+            </tbody>
+
+          </table>
+        </div>
+        <div style="width: 100%">
+          <div class="staTable-footer">
+            <div style="float: right">
+              <span @click="goPrev" class="prev">上一页</span>
+              <span @click="goNext" class="next">下一页</span>
+              <span>跳转到
+            <input id="gopage" type="text" style="width: 16px;height: 16px;text-align: center">
           </span>
-            <span @click="goNum" class="go">确定</span>
+              <span @click="goPage" class="go">确定</span>
+            </div>
           </div>
-        </li>
-      </ul>
+
+        </div>
+      </div>
+
     </div>
   </div>
-  <div class="nosearch" v-else>暂无搜索结果，请重新输入</div>
+  <div class="nosearch" v-else>暂无搜索结果</div>
 </template>
 
 <script>
@@ -62,51 +80,230 @@
   import axios from 'axios'
   import $ from 'jquery'
   let dataInfo1 = require('../mock1.json')
-  let dataInfo = require('../mock.json');
-  dataInfo1.items.forEach((item, key) => {
-    if (key == 0) {
-      item.checked = true
-    } else {
-      item.checked = false
-    }
-  })
-  console.log(dataInfo1.items);
+//  let dataInfo = require('../mock.json');
+
   export default {
-    props:['msg'],
+    props:['staList',"lists1","dataInfo","num","page"],
     data() {
+      dataInfo1.items.forEach((item, key) => {
+        if (key == 0) {
+          item.checked = true
+        } else {
+          item.checked = false
+        }
+      })
       return {
+        all:false,
         choose:true,
-        staList: dataInfo.columns,
         active: 0,
-        num: utils.toThousand(18888000),
-        lists: dataInfo1.items,
-        lists1:dataInfo.items
+        lists: [],
+        dataInfo1:''
       }
     },
-    watch: {},
-    computed: {},
+    created(){
+      axios.get("/_/hosp/search/science/category").then(res=>{
+        res.data.items.forEach((item, key) => {
+            item.checked = false
+        });
+        this.dataInfo1=res.data;
+        this.lists=res.data.items
+      })
+    },
+    watch: {
+      all:function (value) {
+        this.lists1=this.dataInfo.items
+        console.log(value);
+        this.lists.forEach((item,key)=>{
+          if(key!=0) item.checked=value
+          }
+          )
+      }
+    },
+    computed: {
+    },
     methods: {
-      goPrev(){},
-      goNext(){},
+      goPrev(){
+
+        this.page-=10;
+        if(this.page<0){
+          this.page=0
+        }
+        axios.post('/_/hosp/search/science', {
+          "query": {
+            "or": {
+              "values": [
+                {
+                  "and": {
+                    "values": [
+                      {
+                        "compare": {
+                          "kword": "symptom",
+                          "operator": "eq",
+                          "values": [
+                            $("#commonsearch").val()
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          "assets": {
+            "queryModel": "症状等于发热query的json编码字符串数据",
+            "modelText": "症状等于发热"
+          },
+          "start":this.page,
+          "type": "diagnosis",
+          "filters": []
+        }).then(res => {
+          console.log(res.data);
+
+          res.data.items.forEach(item=>{
+            if(item.data.birthday){
+              item.data.birthday.substr(0,10)
+
+            }
+            if(item.data.date){
+              item.data.date.substr(0,10)
+            }
+          })
+          res.data.columns.forEach(item=>{
+            item.checked=true
+          })
+          this.dataInfo=res.data
+          this.staList=res.data.columns;
+          this.lists1=res.data.items;
+          this.num=utils.toThousand(res.data.total)
+        })
+      },
+      goNext(){
+        this.page+=10
+        console.log(this.page);
+        console.log($("#commonsearch").val());
+        axios.post('/_/hosp/search/science', {
+          "query": {
+            "or": {
+              "values": [
+                {
+                  "and": {
+                    "values": [
+                      {
+                        "compare": {
+                          "kword": "symptom",
+                          "operator": "eq",
+                          "values": [
+                            $("#commonsearch").val()
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          "assets": {
+            "queryModel": "症状等于发热query的json编码字符串数据",
+            "modelText": "症状等于发热"
+          },
+          "start":this.page,
+          "type": "diagnosis",
+          "filters": []
+        }).then(res => {
+          console.log(res.data);
+
+          res.data.items.forEach(item=>{
+            if(item.data.birthday){
+              item.data.birthday.substr(0,10)
+
+            }
+            if(item.data.date){
+              item.data.date.substr(0,10)
+            }
+          })
+          res.data.columns.forEach(item=>{
+            item.checked=true
+          })
+          this.dataInfo=res.data
+          this.staList=res.data.columns;
+          this.lists1=res.data.items;
+          this.num=utils.toThousand(res.data.total)
+        })
+      },
+      goPage(){
+        axios.post('/_/hosp/search/science', {
+          "query": {
+            "or": {
+              "values": [
+                {
+                  "and": {
+                    "values": [
+                      {
+                        "compare": {
+                          "kword": "symptom",
+                          "operator": "eq",
+                          "values": [
+                            $("#commonsearch").val()
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          "assets": {
+            "queryModel": "症状等于发热query的json编码字符串数据",
+            "modelText": "症状等于发热"
+          },
+          "start":(parseInt($("#gopage").val())+1)*10,
+          "type": "diagnosis",
+          "filters": []
+        }).then(res => {
+          console.log(res.data);
+
+          res.data.items.forEach(item=>{
+            if(item.data.birthday){
+              item.data.birthday.substr(0,10)
+
+            }
+            if(item.data.date){
+              item.data.date.substr(0,10)
+            }
+          })
+          res.data.columns.forEach(item=>{
+            item.checked=true
+          })
+          this.dataInfo=res.data
+          this.staList=res.data.columns;
+          this.lists1=res.data.items;
+          this.num=utils.toThousand(res.data.total)
+        })
+
+      },
       fn(e) {
         if (e.target.checked == false) {
           $('#patient').addClass('activeClass').siblings().removeClass('activeClass')
-          this.staList={...dataInfo.columns};
-          this.lists1={...dataInfo.items}
+          this.staList={...this.dataInfo.columns};
+          this.lists1={...this.dataInfo.items}
         }
       },
       changeTab(e){
         $(e.target).addClass('activeClass').siblings().removeClass('activeClass');
-        if(e.target.id=='patient'){
-          this.staList={...dataInfo.columns};
-          this.lists1={...dataInfo.items}
+        if(e.target.id=='diagnosis'){
+          this.staList={...this.dataInfo.columns};
+          this.lists1={...this.dataInfo.items}
         }else{
           this.staList=[];
           this.lists1=[]
         }
       },
       toggleList(e){
-        this.staList={...dataInfo.columns};
+        console.log(this.dataInfo);
+        this.staList={...this.dataInfo.columns};
       }
     },
 
@@ -202,56 +399,66 @@
         display flex
         flex-wrap wrap
         li
-          width 92px
+          width 100px
           margin 0 20px 12px 0
           span
             font-size 13px
       .staTable
         margin-top 10px
         width 100%
-        margin-left -25px
-        border-left  1px solid #ddd
-        border-top 1px solid #ddd
-        span
-          font-size 14px
-          display inline-block
-          border-right 1px solid #ddd
-          border-bottom  1px solid #ddd
-          text-align center
-          height 35px
-          line-height 35px
-          padding 2px
-        .staTable-header
-          background #F0F0F0
-          color rgb(51, 51, 51)
-          font-weight bold
-          width 100%
-          display flex
-          span
-            flex 1
+        border 1px solid rgb(221, 221, 221)
+        thead
+          tr
+            background #F0F0F0
+            color rgb(51, 51, 51)
+            font-weight bold
+            width 100%
+            font-size 14px
+            th
+              text-align center
+              span
+                width 100px
+                display block
+                white-space nowrap
+                overflow hidden
+                text-overflow ellipsis
+                text-align center
+                padding 8px
         .staTable-body
-          display flex
-          span
-            flex 1
-            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-            color #666
-        .staTable-footer
-          box-sizing border-box
-          height 40px
           width 100%
-          border-right 1px solid #ddd
-          border-bottom  1px solid #ddd
-          span
-            border none
-          .go, .prev, .next
-            display inline-block
-            width 50px
-            cursor pointer
-            height 19px
-            line-height 21px
-            &:hover
-              background #41b8b0
-              color #fff
+          &:hover
+            background #D8F0EF
+          td
+            span
+              width 100px
+              display block
+              text-align center
+              font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+              color #666
+              font-size 14px
+              white-space nowrap
+              overflow hidden
+              text-overflow ellipsis
+              padding 8px
+    .staTable-footer
+      box-sizing border-box
+      height 40px
+      line-height 40px
+      width 100%
+      font-size 14px
+      border 1px solid rgb(221, 221, 221)
+      border-top none
+      span
+        border none
+      .go, .prev, .next
+        display inline-block
+        width 50px
+        cursor pointer
+        height 19px
+        line-height 21px
+        &:hover
+          background #41b8b0
+          color #fff
       .change-page
         width 1226px
         height 35px

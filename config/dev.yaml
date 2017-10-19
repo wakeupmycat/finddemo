@@ -1,0 +1,22 @@
+session:
+  prefix: x-token-ai-internal-diagnostic-
+cookie:
+  secret:
+    hashKey: ed1805b0fa2b64ab199f0ad2c6f23eff8cfd4b31f6e690b66c7ce7e6f295817f
+    blockKey: 7e845bb02d23f9ccb168e7935288e75ad97891023f509cccd9fb72868734bffc
+oauth2:
+  url:
+    default: http://oauth2-internal.dev-bdmd.com
+  appid: ai-diagnose
+  secret: 44832ffa02dd9624075783e6dd9b39bcbc4a72cf
+web:
+  routes:
+  - path: /
+    protected: true
+    routeMode: local
+    localRoute:
+      path: /
+      index: index.html
+      cache:
+        option: no-cache
+

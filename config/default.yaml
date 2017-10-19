@@ -1,0 +1,19 @@
+openapi:
+  host: openapi
+session:
+  prefix: x-token-ai-diagnose-
+oauth2:
+  scopes:
+  - ai.v1.doctor
+  - ai.v1.entity
+  - ai.v1.text
+web:
+  routes:
+  - path: /
+    protected: true
+    routeMode: local
+    localRoute:
+      path: /
+      index: index.html
+      cache:
+        option: no-cache
