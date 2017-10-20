@@ -38,7 +38,6 @@
     </div>
     <DisList :page="page" :staList="staList" :lists1="lists1" :dataInfo="dataInfo" :num="num"></DisList>
     <router-view></router-view>
-
   </div>
 </template>
 
@@ -73,7 +72,7 @@
 //        $('.sheader').animate({
 //          height: 136
 //        }, 500);
-        $('#app').css("overflow-y", "scroll")
+        $('#app').css("overflow-y", "scroll");
         axios.post('/_/hosp/search/science', {
           "query": {
             "or": {
@@ -100,29 +99,31 @@
             "queryModel": "症状等于发热query的json编码字符串数据",
             "modelText": "症状等于发热"
           },
-          "start":this.page,
-          "type": "diagnosis",
+          "start":0,
+          "type": "patient",
           "filters": []
         }).then(res => {
-          console.log(res.data);
+          if(res.data.items){
+//            res.data.items.forEach(item=>{
+//              if(item.data.birthday){
+//                item.data.birthday.substr(0,10)
+//
+//              }
+//              if(item.data.date){
+//                item.data.date.substr(0,10)
+//              }
+//            })
+            res.data.columns.forEach(item=>{
+              item.checked=true
+            })
+            this.dataInfo=res.data
+            this.staList=res.data.columns;
+            this.lists1=res.data.items;
+            this.num=utils.toThousand(res.data.total)
+          }
 
-          res.data.items.forEach(item=>{
-            if(item.data.birthday){
-              item.data.birthday.substr(0,10)
+        });
 
-            }
-            if(item.data.date){
-              item.data.date.substr(0,10)
-            }
-          })
-          res.data.columns.forEach(item=>{
-            item.checked=true
-          })
-          this.dataInfo=res.data
-          this.staList=res.data.columns;
-          this.lists1=res.data.items;
-          this.num=utils.toThousand(res.data.total)
-        })
       }
 
     }

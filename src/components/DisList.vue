@@ -6,26 +6,23 @@
     <!--</div>-->
     <div class="list-box">
       <span class="list-title">自定义病人队列统计表</span>
-      <div>
-        <input type="checkbox" v-model="all">全选
-      </div>
+      <!--<div>-->
+        <!--<input type="checkbox" v-model="all">全选-->
+      <!--</div>-->
       <ul class="list-lists">
-        <li v-for="(list,key) in lists">
+        <li v-for="(list,key) in lists" v-if="key!=0">
           <input @change="fn" style="position: relative;top: -1px" type="checkbox" v-model="list.checked">
           <span>{{list.text}}</span>
         </li>
       </ul>
     </div>
     <ul class="listInfo-tab">
-      <li @click="changeTab" :class="{activeClass:active==key}" :id='list.name' v-for="(list,key) in lists"
+      <li @click="changeTab"  :class="{activeClass:key==0}" :id='list.name' v-for="(list,key) in lists"
           v-if="list.checked">
         {{list.text}}
       </li>
     </ul>
-    <ul class="listInfo-list-check">
-      <li class="list-check-item" :class="{activeClass:key==0}" v-for="(list,key) in lists" >
-      </li>
-    </ul>
+
     <div v-if="num">
       <div class="listInfo-table">
         <span class="list-filter">筛选</span>
@@ -38,7 +35,7 @@
         <span style="font-size: 14px;">共搜索到
       <span>{{num}}</span>
       条记录</span>
-        <div  style="overflow: scroll; width: 100%">
+        <div  style="overflow: scroll; width: 100%;margin-left: -25px">
           <table   class="staTable" border>
             <thead>
             <tr>
@@ -49,13 +46,13 @@
             </thead>
             <tbody>
             <tr v-for="item in lists1" class="staTable-body">
-              <td :title="item.data[col.key]" v-for="col in staList" v-show="col.checked"><span>{{item.data[col.key]}}</span></td>
+              <td :title="item.data[col.key]" v-for="col in staList" v-show="col.checked"><span>{{col.key=="birthday"?item.data[col.key].substr(0,10):item.data[col.key]}}</span></td>
             </tr>
             </tbody>
 
           </table>
         </div>
-        <div style="width: 100%">
+        <div style="width: 100%;margin-left: -25px">
           <div class="staTable-footer">
             <div style="float: right">
               <span @click="goPrev" class="prev">上一页</span>
@@ -71,8 +68,8 @@
       </div>
 
     </div>
+    <div class="nosearch" v-else>暂无搜索结果</div>
   </div>
-  <div class="nosearch" v-else>暂无搜索结果</div>
 </template>
 
 <script>
@@ -81,7 +78,6 @@
   import $ from 'jquery'
   let dataInfo1 = require('../mock1.json')
 //  let dataInfo = require('../mock.json');
-
   export default {
     props:['staList',"lists1","dataInfo","num","page"],
     data() {
@@ -103,7 +99,12 @@
     created(){
       axios.get("/_/hosp/search/science/category").then(res=>{
         res.data.items.forEach((item, key) => {
+          if(key==0){
+            item.checked = true
+          }else {
             item.checked = false
+          }
+
         });
         this.dataInfo1=res.data;
         this.lists=res.data.items
@@ -111,6 +112,7 @@
     },
     watch: {
       all:function (value) {
+        $('#patient').addClass('activeClass')
         this.lists1=this.dataInfo.items
         console.log(value);
         this.lists.forEach((item,key)=>{
@@ -155,7 +157,7 @@
             "modelText": "症状等于发热"
           },
           "start":this.page,
-          "type": "diagnosis",
+          "type":$(".listInfo-tab>.activeClass")[0].id,
           "filters": []
         }).then(res => {
           console.log(res.data);
@@ -209,7 +211,7 @@
             "modelText": "症状等于发热"
           },
           "start":this.page,
-          "type": "diagnosis",
+          "type": $(".listInfo-tab>.activeClass")[0].id,
           "filters": []
         }).then(res => {
           console.log(res.data);
@@ -260,7 +262,7 @@
             "modelText": "症状等于发热"
           },
           "start":(parseInt($("#gopage").val())+1)*10,
-          "type": "diagnosis",
+          "type": $(".listInfo-tab>.activeClass")[0].id,
           "filters": []
         }).then(res => {
           console.log(res.data);
@@ -293,13 +295,58 @@
       },
       changeTab(e){
         $(e.target).addClass('activeClass').siblings().removeClass('activeClass');
-        if(e.target.id=='diagnosis'){
-          this.staList={...this.dataInfo.columns};
-          this.lists1={...this.dataInfo.items}
-        }else{
           this.staList=[];
-          this.lists1=[]
-        }
+          this.lists1=[];
+          this.num=0
+        axios.post('/_/hosp/search/science', {
+          "query": {
+            "or": {
+              "values": [
+                {
+                  "and": {
+                    "values": [
+                      {
+                        "compare": {
+                          "kword": "symptom",
+                          "operator": "eq",
+                          "values": [
+                            $("#commonsearch").val()
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          "assets": {
+            "queryModel": "症状等于发热query的json编码字符串数据",
+            "modelText": "症状等于发热"
+          },
+          "start":this.page,
+          "type": $(".listInfo-tab>.activeClass")[0].id,
+          "filters": []
+        }).then(res => {
+          console.log(res.data);
+
+          res.data.items.forEach(item=>{
+            if(item.data.birthday){
+              item.data.birthday.substr(0,10)
+
+            }
+            if(item.data.date){
+              item.data.date.substr(0,10)
+            }
+          })
+          res.data.columns.forEach(item=>{
+            item.checked=true
+          })
+          this.dataInfo=res.data
+          this.staList=res.data.columns;
+          this.lists1=res.data.items;
+          this.num=utils.toThousand(res.data.total)
+        })
       },
       toggleList(e){
         console.log(this.dataInfo);
@@ -417,7 +464,7 @@
             th
               text-align center
               span
-                width 100px
+                width 120px
                 display block
                 white-space nowrap
                 overflow hidden
@@ -430,7 +477,7 @@
             background #D8F0EF
           td
             span
-              width 100px
+              width 120px
               display block
               text-align center
               font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
