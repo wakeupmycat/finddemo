@@ -73,36 +73,12 @@
 //          height: 136
 //        }, 500);
         $('#app').css("overflow-y", "scroll");
-        axios.post('/_/hosp/search/science', {
-          "query": {
-            "or": {
-              "values": [
-                {
-                  "and": {
-                    "values": [
-                      {
-                        "compare": {
-                          "kword": "symptom",
-                          "operator": "eq",
-                          "values": [
-                            $("#commonsearch").val()
-                          ]
-                        }
-                      }
-                    ]
-                  }
-                }
-              ]
-            }
-          },
-          "assets": {
-            "queryModel": "症状等于发热query的json编码字符串数据",
-            "modelText": "症状等于发热"
-          },
-          "start":0,
-          "type": "patient",
-          "filters": []
+        axios.post('/_/hosp/search/science/global', {
+          "text":$("#commonsearch").val(),
+          "type":$(".listInfo-tab>.activeClass")[0].id,
+          "start":this.page,
         }).then(res => {
+          console.log(res.data);
           if(res.data.items){
 //            res.data.items.forEach(item=>{
 //              if(item.data.birthday){

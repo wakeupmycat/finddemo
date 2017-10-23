@@ -76,24 +76,16 @@
   import utils from '../assets/js/utils'
   import axios from 'axios'
   import $ from 'jquery'
-  let dataInfo1 = require('../mock1.json')
-//  let dataInfo = require('../mock.json');
   export default {
     props:['staList',"lists1","dataInfo","num","page"],
     data() {
-      dataInfo1.items.forEach((item, key) => {
-        if (key == 0) {
-          item.checked = true
-        } else {
-          item.checked = false
-        }
-      })
+
       return {
         all:false,
         choose:true,
         active: 0,
         lists: [],
-        dataInfo1:''
+        dataInfo1:[]
       }
     },
     created(){
@@ -130,35 +122,10 @@
         if(this.page<0){
           this.page=0
         }
-        axios.post('/_/hosp/search/science', {
-          "query": {
-            "or": {
-              "values": [
-                {
-                  "and": {
-                    "values": [
-                      {
-                        "compare": {
-                          "kword": "symptom",
-                          "operator": "eq",
-                          "values": [
-                            $("#commonsearch").val()
-                          ]
-                        }
-                      }
-                    ]
-                  }
-                }
-              ]
-            }
-          },
-          "assets": {
-            "queryModel": "症状等于发热query的json编码字符串数据",
-            "modelText": "症状等于发热"
-          },
-          "start":this.page,
+        axios.post('/_/hosp/search/science/global', {
+          "text":$("#commonsearch").val(),
           "type":$(".listInfo-tab>.activeClass")[0].id,
-          "filters": []
+          "start":this.page,
         }).then(res => {
           console.log(res.data);
 
@@ -182,40 +149,11 @@
       },
       goNext(){
         this.page+=10
-        console.log(this.page);
-        console.log($("#commonsearch").val());
-        axios.post('/_/hosp/search/science', {
-          "query": {
-            "or": {
-              "values": [
-                {
-                  "and": {
-                    "values": [
-                      {
-                        "compare": {
-                          "kword": "symptom",
-                          "operator": "eq",
-                          "values": [
-                            $("#commonsearch").val()
-                          ]
-                        }
-                      }
-                    ]
-                  }
-                }
-              ]
-            }
-          },
-          "assets": {
-            "queryModel": "症状等于发热query的json编码字符串数据",
-            "modelText": "症状等于发热"
-          },
+        axios.post('/_/hosp/search/science/global', {
+          "text":$("#commonsearch").val(),
+          "type":$(".listInfo-tab>.activeClass")[0].id,
           "start":this.page,
-          "type": $(".listInfo-tab>.activeClass")[0].id,
-          "filters": []
         }).then(res => {
-          console.log(res.data);
-
           res.data.items.forEach(item=>{
             if(item.data.birthday){
               item.data.birthday.substr(0,10)
@@ -235,35 +173,10 @@
         })
       },
       goPage(){
-        axios.post('/_/hosp/search/science', {
-          "query": {
-            "or": {
-              "values": [
-                {
-                  "and": {
-                    "values": [
-                      {
-                        "compare": {
-                          "kword": "symptom",
-                          "operator": "eq",
-                          "values": [
-                            $("#commonsearch").val()
-                          ]
-                        }
-                      }
-                    ]
-                  }
-                }
-              ]
-            }
-          },
-          "assets": {
-            "queryModel": "症状等于发热query的json编码字符串数据",
-            "modelText": "症状等于发热"
-          },
-          "start":(parseInt($("#gopage").val())+1)*10,
-          "type": $(".listInfo-tab>.activeClass")[0].id,
-          "filters": []
+        axios.post('/_/hosp/search/science/global', {
+          "text":$("#commonsearch").val(),
+          "type":$(".listInfo-tab>.activeClass")[0].id,
+          "start":(parseInt($("#gopage").val())-1)*10,
         }).then(res => {
           console.log(res.data);
 
@@ -298,35 +211,11 @@
           this.staList=[];
           this.lists1=[];
           this.num=0
-        axios.post('/_/hosp/search/science', {
-          "query": {
-            "or": {
-              "values": [
-                {
-                  "and": {
-                    "values": [
-                      {
-                        "compare": {
-                          "kword": "symptom",
-                          "operator": "eq",
-                          "values": [
-                            $("#commonsearch").val()
-                          ]
-                        }
-                      }
-                    ]
-                  }
-                }
-              ]
-            }
-          },
-          "assets": {
-            "queryModel": "症状等于发热query的json编码字符串数据",
-            "modelText": "症状等于发热"
-          },
+          this.page=0
+        axios.post('/_/hosp/search/science/global', {
+          "text":$("#commonsearch").val(),
+          "type":$(".listInfo-tab>.activeClass")[0].id,
           "start":this.page,
-          "type": $(".listInfo-tab>.activeClass")[0].id,
-          "filters": []
         }).then(res => {
           console.log(res.data);
 
@@ -350,6 +239,7 @@
       },
       toggleList(e){
         console.log(this.dataInfo);
+        this.page=0;
         this.staList={...this.dataInfo.columns};
       }
     },
@@ -464,7 +354,7 @@
             th
               text-align center
               span
-                width 120px
+                width 288px
                 display block
                 white-space nowrap
                 overflow hidden
@@ -477,7 +367,7 @@
             background #D8F0EF
           td
             span
-              width 120px
+              width 288px
               display block
               text-align center
               font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
