@@ -217,8 +217,6 @@
           "type":$(".listInfo-tab>.activeClass")[0].id,
           "start":this.page,
         }).then(res => {
-          console.log(res.data);
-
           res.data.items.forEach(item=>{
             if(item.data.birthday){
               item.data.birthday.substr(0,10)
